@@ -1,12 +1,14 @@
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-var BookmarkSchema = mongoose.Schema({
+const BookmarkSchema = new Schema({
+  user: String,
   title: String,
   url: String,
   tags: [String],
   created: { type: Date, default: Date.now },
 });
 
-var Bookmark = mongoose.model('Bookmark', BookmarkSchema);
+const Bookmark = mongoose.model('Bookmark', BookmarkSchema);
 
 module.exports = Bookmark;
