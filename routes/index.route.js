@@ -1,15 +1,12 @@
 const express = require('express');
-const router = express.Router();
+const router = express.Router();// eslint-disable-line
 const stormpath = require('express-stormpath');
 const Bookmark = require('../models/bookmark.model');
+const getPageTitle = require('../tools/get-page-title.js');
 
 /* GET home page. */
 router.get('/', (req, res) => {
   res.render('index', { title: 'Boomstack', message: '' });
-});
-
-router.get('/hello', stormpath.loginRequired, (req, res) => {
-  res.render('index', { title: 'Boomstack Stack', message: 'Welcome !' });
 });
 
 router.get('/bookmarks', stormpath.loginRequired, (req, res, next) => {
@@ -20,15 +17,21 @@ router.get('/bookmarks', stormpath.loginRequired, (req, res, next) => {
 });
 
 router.post('/bookmark', stormpath.loginRequired, (req, res, next) => {
-  const bookmark = new Bookmark({
-    user: req.user.username,
-    title: req.body.title,
-  });
+  getPageTitle(req.body.url)
+    .catch(() => '')
+    .then((title) => {
+      const bookmark = new Bookmark({
+        user: req.user.username,
+        title,
+        url: req.body.url,
+      });
+      // res.json(title);
 
-  bookmark.save((err, bm) => {
-    if (err) next(err);
-    else res.json(bm);
-  });
+      bookmark.save((err, bm) => {
+        if (err) next(err);
+        else res.json(bm);
+      });
+    });
 });
 
 module.exports = router;
