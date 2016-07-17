@@ -34,4 +34,21 @@ router.post('/bookmark', stormpath.loginRequired, (req, res, next) => {
     });
 });
 
+router.post('/tags', stormpath.loginRequired, (req, res, next) => {
+  // console.log(req.body);
+  if (!req.body.id) next(new Error('No bookmark id provided, body:'));
+
+  Bookmark.findById(req.body.id, (err, bm) => {
+    if (err) next(err);
+
+    const bookmark = bm;
+    const tags = req.body.tags.split(',').map(str => str.trim());
+    if (Array.isArray(tags)) {
+      bookmark.tags = tags;
+      bookmark.save();
+      res.json(bookmark);
+    }
+  });
+});
+
 module.exports = router;
