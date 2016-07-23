@@ -2,6 +2,9 @@
   "name": "boomstack",
   "version": "0.0.0",
   "private": true,
+  "engines": {
+    "node": "6.2.0"
+  },
   "scripts": {
     "start": "node ./bin/www",
     "build-react": "browserify ./react/stst_react.js -o ./public/javascripts/boomstack.js -t [ babelify --presets [ es2015 react ] ]",
