@@ -3,9 +3,9 @@ const Schema = mongoose.Schema;
 
 const BookmarkSchema = new Schema({
   user: String,
-  title: String,
-  url: String,
-  tags: [String],
+  title: { type: String, text: true },
+  url: { type: String, text: true },
+  tags: { type: [String], text: true },
   created: { type: Date, default: Date.now },
 });
 

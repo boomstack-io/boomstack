@@ -3,19 +3,35 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "build-react": "browserify ./react/stst_react.js -o ./public/javascripts/boomstack.js -t [ babelify --presets [ es2015 react ] ]",
+    "build-less": "node scripts/build-less.js",
+    "prestart": "npm run build-react && npm run build-less",
+    "postinstall": "npm run build-react && npm run build-less",
+    "start:noscripts": "node ./bin/www"
   },
   "dependencies": {
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-react": "^6.11.1",
+    "babelify": "^7.3.0",
     "body-parser": "~1.13.2",
+    "bootstrap": "^3.3.6",
+    "browserify": "^13.0.1",
     "cookie-parser": "~1.3.5",
     "debug": "~2.2.0",
     "dotenv": "^2.0.0",
     "ejs": "~2.3.3",
     "express": "~4.13.1",
     "express-stormpath": "^3.1.3",
+    "he": "^1.1.0",
+    "jquery": "^3.1.0",
     "less": "^2.7.1",
     "mongoose": "^4.5.3",
     "morgan": "~1.6.1",
+    "react": "^15.2.1",
+    "react-addons-css-transition-group": "^15.2.1",
+    "react-dom": "^15.2.1",
+    "react-tagsinput": "^3.11.0",
     "serve-favicon": "~2.3.0"
   }
 }
