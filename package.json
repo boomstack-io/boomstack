@@ -6,7 +6,6 @@
     "start": "node ./bin/www",
     "build-react": "browserify ./react/stst_react.js -o ./public/javascripts/boomstack.js -t [ babelify --presets [ es2015 react ] ]",
     "build-less": "node scripts/build-less.js",
-    "prestart": "npm run build-react && npm run build-less",
     "postinstall": "npm run build-react && npm run build-less",
     "start:noscripts": "node ./bin/www"
   },
