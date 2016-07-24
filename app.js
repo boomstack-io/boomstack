@@ -1,4 +1,4 @@
-// require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const stormpath = require('express-stormpath');
+const csrf = require('csurf');
 
 mongoose.connect(process.env.MONGODB_URI + '/boomstack');
 
@@ -26,6 +27,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(stormpath.init(app, { website: true }));
+app.use(csrf({ cookie: true }));
 
 app.use('/', routes);
 

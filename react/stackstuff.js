@@ -1,6 +1,7 @@
 const React = require('react');
 const ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 const $ = require('jquery');
+const stopWords = require('stopwords-json');
 
 const MarkupList = require('./markup-list.js');
 const AddMarkupForm = require('./addmarkup-form.js');
@@ -35,7 +36,7 @@ const StackStuff = React.createClass({
       method: 'post',
       data: {
         url: data.url,
-        _token: csrfToken,
+        _csrf: csrfToken,
       },
       dataType: 'json',
       success: (res) => {
@@ -93,7 +94,7 @@ const StackStuff = React.createClass({
         data: {
           id,
           tags: tagsString,
-          _token: csrfToken,
+          _csrf: csrfToken,
           dataType: 'json',
         },
         success: (res) => {
@@ -170,7 +171,7 @@ const StackStuff = React.createClass({
 
     $.ajax(baseUrl + 'bookmark/' + markupId, {
       type: 'DELETE',
-      data: { _token: csrfToken },
+      data: { _csrf: csrfToken },
       success: (data) => {
         console.log('Successfuly deleted: ' + data);
         const markups = this.state.markups;
@@ -187,18 +188,32 @@ const StackStuff = React.createClass({
     });
   },
 
+  eliminateStopWordsInTagsArray(tags) {
+    const cleanTags = [];
+    tags.forEach((tag) => {
+      const sw = stopWords;
+      const t = tag.toLowerCase();
+      // let the magic begin... ^^
+      const r = Object.keys(sw).find((l) => sw[l].find((s) => s === t) !== undefined);
+      if (r === undefined) cleanTags.push(tag);
+      // else console.log(`Eliminated stop word: ${tag}`);
+    });
+    return cleanTags;
+  },
+
   renderAddTagForm() {
     if (!this.state.markups || this.state.markups.length === 0) return null;
     const lastMarkup = this.state.markups[0];
     const tags = lastMarkup.tags || [];
     const rawTags = tags.map((tag) => tag.name);
 
-    let suggestedTags = '';
+    let suggestedTags = [];
     if (lastMarkup.title) suggestedTags = lastMarkup.title.split(/[ ,.;]/);
+    suggestedTags = this.eliminateStopWordsInTagsArray(suggestedTags);
 
     return (
       <AddTagForm
-        tags={rawTags}
+        tags={tags}
         suggestedTags={suggestedTags}
         onAddTag={this.handleAddTagToLastMarkup}
         onCancel={this.handleCancelAddTag}

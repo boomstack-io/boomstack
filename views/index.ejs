@@ -5,8 +5,42 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
-    <p><%= message %></p>
+    <% include nav.ejs %>
+
+  <div class="container home">
+    <div class="row">
+      <header class="panel panel-default">
+          <!--
+          <div class="panel-heading">
+              <h1>Boomstack</h1>
+          </div>
+          -->
+
+          <div class="panel-body">
+              Simply bookmark the pages you like<br/><span> Tag them, and find them later easily.</span>
+          </div>
+      </header>
+    </div>
+    <!--
+    <div class="row">
+       <ul class="list-group">
+          <li class="list-group-item post text-center li-head"><h4>Latest bookmarks added : </h4></li>
+          @foreach ($markups as $markup)
+              <li class="list-group-item post">
+                  <div class="post-title">
+                      {{$markup->name}}
+                      @foreach ($markup->tags as $tag)
+                          <span class="label label-default">{{$tag->name}}</span>
+                      @endforeach
+                  </div>
+                  <div class="post-link">
+                      <a target="_blank" rel="nofollow" href="{{$markup->url}}">{{parse_url($markup->url, PHP_URL_HOST)}}</a>
+                  </div>
+              </li>
+          @endforeach
+      </ul>
+    </div>
+    -->
+  </div>
   </body>
 </html>

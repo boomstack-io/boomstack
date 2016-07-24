@@ -5,12 +5,20 @@ const Bookmark = require('../models/bookmark.model');
 const getPageTitle = require('../tools/get-page-title.js');
 
 /* GET home page. */
-router.get('/', (req, res) => {
-  res.render('index', { title: 'Boomstack', message: '' });
+router.get('/', stormpath.getUser, (req, res) => {
+  if (req.user) res.redirect('/hello');
+  res.render('index', {
+    title: 'Boomstack',
+    message: '',
+    logged: req.user != null,
+  });
 });
 
 router.get('/hello', stormpath.loginRequired, (req, res) => {
-  res.render('hello');
+  res.render('hello', {
+    csrfToken: req.csrfToken(),
+    logged: true,
+  });
 });
 
 router.get('/bookmarks', stormpath.loginRequired, (req, res, next) => {

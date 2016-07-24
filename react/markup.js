@@ -20,7 +20,7 @@ const Markup = React.createClass({
   renderTags() {
     if (!this.props.tags) return null;
     const tagsNodes = this.props.tags.map(
-      (tag) => (<span className="label label-default">{tag}</span>));
+      (tag, i) => (<span key={i} className="label label-default">{tag}</span>));
     return tagsNodes;
   },
 
