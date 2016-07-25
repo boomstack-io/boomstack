@@ -6,7 +6,9 @@ const getPageTitle = require('../tools/get-page-title.js');
 
 /* GET home page. */
 router.get('/', stormpath.getUser, (req, res) => {
-  if (req.user) res.redirect('/hello');
+  let stack = '';
+  if (req.query.stack) stack = req.query.stack;
+  if (req.user) res.redirect(`/hello?stack=${stack}`);
   res.render('index', {
     title: 'Boomstack',
     message: '',

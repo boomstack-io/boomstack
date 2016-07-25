@@ -1,12 +1,18 @@
-var React = require('react');
-var getParameterByName = require('./getparameterbyname.js');
+const React = require('react');
+const getParameterByName = require('./getparameterbyname.js');
 
-var baseUrl = '/';
+const baseUrl = '/';
 
-var AddMarkupForm = React.createClass({
+const AddMarkupForm = React.createClass({
+  getInitialState() {
+    return {
+      fieldValue: '',
+      buttonText: 'stack it !',
+    };
+  },
 
-  componentDidMount: function () {
-    var urlStack = getParameterByName('stack', document.location.href);
+  componentDidMount() {
+    const urlStack = getParameterByName('stack', document.location.href);
     if (urlStack) {
       this.setState({
         fieldValue: urlStack,
@@ -15,10 +21,9 @@ var AddMarkupForm = React.createClass({
     }
   },
 
-  handleUrlChange: function (e) {
-    this.setState({ fieldValue:e.target.value });
+  handleUrlChange(e) {
+    this.setState({ fieldValue: e.target.value });
 
-    //console.log('change ' + this.state.fieldValue);
     if (this.isSearch()) {
       this.setState({ buttonText: 'search' });
     } else {
@@ -26,33 +31,33 @@ var AddMarkupForm = React.createClass({
     }
   },
 
-  handleSubmit: function (e) {
+  handleSubmit(e) {
     e.preventDefault();
-    var url = this.state.fieldValue;
+    const url = this.state.fieldValue;
 
     if (this.isSearch()) {
-      console.log('Searching for : ' + this.state.fieldValue);
+      // console.log('Searching for : ' + this.state.fieldValue);
       if (this.props.onSearch) {
         this.props.onSearch(this.state.fieldValue);
       }
     } else {
       if (this.props.onAddMarkup) {
         this.props.onAddMarkup({ url:url });
-        this.setState({ fieldValue:'' });
+        this.setState({ fieldValue: '' });
       }
     }
   },
 
-  isSearch: function () {
-    //console.log(this.state.fieldValue);
-    var match = this.state.fieldValue.match(/^https?:\/\/.*/);
+  isSearch() {
+    const match = this.state.fieldValue.match(/^https?:\/\/.*/);
     if (Array.isArray(match) && match.length > 0) {
-      //console.log('is search ! ');
+      // console.log('is search ! ');
       return false;
-    } else return true;
+    }
+    return true;
   },
 
-  render: function () {
+  render() {
     return (
       <div className="row addmarkup-form">
         <form className="form-inline stack-form" onSubmit={this.handleSubmit}>
@@ -66,7 +71,7 @@ var AddMarkupForm = React.createClass({
               placeholder="paste a link here to add a markup"
               onChange={this.handleUrlChange}
               onKeyUp={this.handleUrlChange}
-              />
+            />
           </div>
           <div className="col-xs-6 col-xs-offset-3 col-sm-offset-0 col-sm-3 col-md-3 col-lg-3">
             <button className=" add_markup btn btn-default ">{this.state.buttonText}</button>
@@ -74,13 +79,6 @@ var AddMarkupForm = React.createClass({
         </form>
       </div>
     );
-  },
-
-  getInitialState: function () {
-    return {
-      fieldValue: '',
-      buttonText: 'stack it !',
-    };
   },
 });
 
