@@ -21,26 +21,35 @@
           </div>
       </header>
     </div>
-    <!--
+
     <div class="row">
        <ul class="list-group">
           <li class="list-group-item post text-center li-head"><h4>Latest bookmarks added : </h4></li>
-          @foreach ($markups as $markup)
+          <!-- @foreach ($markups as $markup) -->
+          <% lastBookmarks.forEach((bookmark) => { %>
               <li class="list-group-item post">
                   <div class="post-title">
-                      {{$markup->name}}
-                      @foreach ($markup->tags as $tag)
-                          <span class="label label-default">{{$tag->name}}</span>
-                      @endforeach
+                      <%= bookmark.prettyTitle %>
+                      <!-- @foreach ($markup->tags as $tag) -->
+                      <% bookmark.tags.forEach( tag => { %>
+                          <span class="label label-default"><%= tag %></span>
+                      <!-- @endforeach -->
+                      <% }); %>
                   </div>
                   <div class="post-link">
-                      <a target="_blank" rel="nofollow" href="{{$markup->url}}">{{parse_url($markup->url, PHP_URL_HOST)}}</a>
+                    <% if (bookmark.host && bookmark.url) { %>
+                      <a target="_blank" rel="nofollow" href="<%= bookmark.url %>">
+
+                        <%= bookmark.host %>
+                      </a>
+                      <% } %>
                   </div>
               </li>
-          @endforeach
+          <!-- @endforeach -->
+          <% }); %>
       </ul>
     </div>
-    -->
+
   </div>
   </body>
 </html>

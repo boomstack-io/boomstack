@@ -3,17 +3,39 @@ const router = express.Router();// eslint-disable-line
 const stormpath = require('express-stormpath');
 const Bookmark = require('../models/bookmark.model');
 const getPageTitle = require('../tools/get-page-title.js');
+const url = require('url');
+const he = require('he');
 
 /* GET home page. */
-router.get('/', stormpath.getUser, (req, res) => {
+router.get('/', stormpath.getUser, (req, res, next) => {
   let stack = '';
   if (req.query.stack) stack = req.query.stack;
   if (req.user) res.redirect(`/hello?stack=${stack}`);
-  res.render('index', {
-    title: 'Boomstack',
-    message: '',
-    logged: req.user != null,
-  });
+  // we print the last bookmarks on index page (from all users) :
+  Bookmark
+    .find()
+    .limit(20)
+    .sort('-created')
+    .exec((err, lastBookmarks) => {
+      if (err) next(err);
+      lastBookmarks.forEach((bm) => {
+        let host = '';
+        if (bm.url) host = url.parse(bm.url).host;
+        // we want a variable like host.com to pretty-print the urls in the template
+        bm.host = host;// eslint-disable-line
+
+        let prettyTitle = '';
+          // transform something like " Title &nbsp; &copy;" in "Title ©" :
+        if (bm.title) prettyTitle = he.decode(bm.title);
+        bm.prettyTitle = prettyTitle;// eslint-disable-line
+      });
+      res.render('index', {
+        title: 'Boomstack',
+        message: '',
+        logged: req.user != null,
+        lastBookmarks,
+      });
+    });
 });
 
 router.get('/hello', stormpath.loginRequired, (req, res) => {
