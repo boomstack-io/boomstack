@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();// eslint-disable-line
 const stormpath = require('express-stormpath');
 const Bookmark = require('../models/bookmark.model');
-const getPageTitle = require('../tools/get-page-title.js');
 const url = require('url');
 const he = require('he');
+const bookmarkController = require('../controllers/bookmark');
 
 /* GET home page. */
 router.get('/', stormpath.getUser, (req, res, next) => {
@@ -25,7 +25,7 @@ router.get('/', stormpath.getUser, (req, res, next) => {
         bm.host = host;// eslint-disable-line
 
         let prettyTitle = '';
-          // transform something like " Title &nbsp; &copy;" in "Title ©" :
+        // transform something like " Title &nbsp; &copy;" in "Title ©" :
         if (bm.title) prettyTitle = he.decode(bm.title);
         bm.prettyTitle = prettyTitle;// eslint-disable-line
       });
@@ -45,51 +45,16 @@ router.get('/hello', stormpath.loginRequired, (req, res) => {
   });
 });
 
-router.get('/bookmarks', stormpath.loginRequired, (req, res, next) => {
-  let q = Bookmark.find({ user: req.user.username });
-  console.log('finding...');
-  if (req.query.search) {
-    console.log(`Searching for ${req.query.search}`);
-    const reg = new RegExp(`.*${req.query.search}.*`);
-    q = Bookmark.find(
-      {
-        user: req.user.username,
-        $or: [
-          { title: reg },
-          { tags: { $elemMatch: { $regex: reg } } },
-          { url: reg },
-        ],
-      }
-    );
-  }
-  if (req.query.offset) q.skip(parseInt(req.query.offset, 10));
-  if (req.query.limit) q.limit(parseInt(req.query.limit, 10));
-
-  q
-    .sort('-created')
-    .exec((err, bookmarks) => {
-      if (err) next(err);
-      else res.json(bookmarks);
-    });
+router.get('/bookmarks', stormpath.loginRequired, (req, res) => {
+  bookmarkController
+    .getBookmarks(req.user.username, req.query.search, req.query.offset, req.query.limit)
+    .then((bookmarks) => { res.json(bookmarks); })
+    .catch((err) => res.status(500).send(err));
 });
 
-router.post('/bookmark', stormpath.loginRequired, (req, res, next) => {
-  getPageTitle(req.body.url)
-    .catch(() => '')
-    .then((title) => {
-      const bookmark = new Bookmark({
-        user: req.user.username,
-        title,
-        url: req.body.url,
-      });
-      // res.json(title);
+router.post('/bookmark', stormpath.loginRequired, bookmarkController.addBookmark);
 
-      bookmark.save((err, bm) => {
-        if (err) next(err);
-        else res.json(bm);
-      });
-    });
-});
+router.delete('/bookmark/:id', stormpath.loginRequired, bookmarkController.deleteBookmark);
 
 router.post('/tags', stormpath.loginRequired, (req, res, next) => {
   // console.log(req.body);
@@ -108,18 +73,5 @@ router.post('/tags', stormpath.loginRequired, (req, res, next) => {
   });
 });
 
-router.delete('/bookmark/:id', stormpath.loginRequired, (req, res, next) => {
-  console.log(`Deleting markup n°${req.params.id}`);
-
-  Bookmark.findById(req.params.id, (err, bm) => {
-    if (err) next(err);
-    if (bm == null) res.status(500).json({ error: 'bookmark does not exists' });
-
-    bm.remove((error, bookmark) => {
-      if (error) next(err);
-      res.json(bookmark);
-    });
-  });
-});
 
 module.exports = router;
