@@ -4,7 +4,7 @@ const stormpath = require('express-stormpath');
 const Bookmark = require('../models/bookmark.model');
 const url = require('url');
 const he = require('he');
-const bookmarkController = require('../controllers/bookmark');
+const bookmarkController = require('../controllers/bookmark-controller');
 
 /* GET home page. */
 router.get('/', stormpath.getUser, (req, res, next) => {
@@ -52,9 +52,17 @@ router.get('/bookmarks', stormpath.loginRequired, (req, res) => {
     .catch((err) => res.status(500).send(err));
 });
 
-router.post('/bookmark', stormpath.loginRequired, bookmarkController.addBookmark);
+router.post('/bookmark', stormpath.loginRequired, (req, res) => {
+  bookmarkController.addBookmark(req.user.username, req.body.url)
+    .then((bookmark) => res.json(bookmark))
+    .catch((err) => res.status(500).send(err));
+});
 
-router.delete('/bookmark/:id', stormpath.loginRequired, bookmarkController.deleteBookmark);
+router.delete('/bookmark/:id', stormpath.loginRequired, (req, res) => {
+  bookmarkController.deleteBookmark(req.user.username, req.params.id)
+    .then((bookmark) => res.json(bookmark))
+    .catch((err) => res.status(500).send(err));
+});
 
 router.post('/tags', stormpath.loginRequired, (req, res, next) => {
   // console.log(req.body);
