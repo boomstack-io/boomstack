@@ -28,9 +28,6 @@ const StackStuff = React.createClass({
     this.reloadMarkups();
   },
 
-  componentWillUnmount() {
-  },
-
   handleAddMarkup(data) {
     $.ajax(`${baseUrl}bookmark`, {
       method: 'post',
@@ -89,10 +86,9 @@ const StackStuff = React.createClass({
       const tagsString = tags.join(',');
       const id = this.state.markups[0]._id;
 
-      $.ajax(baseUrl + 'tags', {
+      $.ajax(baseUrl + 'bookmark/' + id + '/tags', {
         method: 'post',
         data: {
-          id,
           tags: tagsString,
           _csrf: csrfToken,
           dataType: 'json',
@@ -163,17 +159,17 @@ const StackStuff = React.createClass({
     });
 
     if (index === -1) {
-      console.log('Markup with id ' + markupId + ' not found !');
+      // console.log('Markup with id ' + markupId + ' not found !');
       return;
     }
 
-    console.log('Deleting markup ' + markupId + ' (index: ' + index + ')');
+    // console.log('Deleting markup ' + markupId + ' (index: ' + index + ')');
 
     $.ajax(baseUrl + 'bookmark/' + markupId, {
       type: 'DELETE',
       data: { _csrf: csrfToken },
-      success: (data) => {
-        console.log('Successfuly deleted: ' + data);
+      success: () => {
+        // console.log('Successfuly deleted: ' + data);
         const markups = this.state.markups;
         markups.splice(index, 1);
 
@@ -191,9 +187,10 @@ const StackStuff = React.createClass({
   eliminateStopWordsInTagsArray(tags) {
     const cleanTags = [];
     tags.forEach((tag) => {
+      if (tag === '') return;
       const sw = stopWords;
       const t = tag.toLowerCase();
-      // let the magic begin... ^^
+      // searching for the tag in stopwords list... (for every languages)
       const r = Object.keys(sw).find((l) => sw[l].find((s) => s === t) !== undefined);
       if (r === undefined) cleanTags.push(tag);
       // else console.log(`Eliminated stop word: ${tag}`);
@@ -208,7 +205,7 @@ const StackStuff = React.createClass({
     const rawTags = tags.map((tag) => tag.name);
 
     let suggestedTags = [];
-    if (lastMarkup.title) suggestedTags = lastMarkup.title.split(/[ ,.;]/);
+    if (lastMarkup.title) suggestedTags = lastMarkup.title.split(/[ ,.;:|]/);
     suggestedTags = this.eliminateStopWordsInTagsArray(suggestedTags);
 
     return (

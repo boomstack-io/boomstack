@@ -4,7 +4,7 @@ const stormpath = require('express-stormpath');
 const Bookmark = require('../models/bookmark.model');
 const url = require('url');
 const he = require('he');
-const bookmarkController = require('../controllers/bookmark-controller');
+const bookmarkRoutesHandlers = require('./bookmark-routes-handlers');
 
 /* GET home page. */
 router.get('/', stormpath.getUser, (req, res, next) => {
@@ -45,41 +45,19 @@ router.get('/hello', stormpath.loginRequired, (req, res) => {
   });
 });
 
-router.get('/bookmarks', stormpath.loginRequired, (req, res) => {
-  bookmarkController
-    .getBookmarks(req.user.username, req.query.search, req.query.offset, req.query.limit)
-    .then((bookmarks) => { res.json(bookmarks); })
-    .catch((err) => res.status(500).send(err));
-});
-
-router.post('/bookmark', stormpath.loginRequired, (req, res) => {
-  bookmarkController.addBookmark(req.user.username, req.body.url)
-    .then((bookmark) => res.json(bookmark))
-    .catch((err) => res.status(500).send(err));
-});
-
-router.delete('/bookmark/:id', stormpath.loginRequired, (req, res) => {
-  bookmarkController.deleteBookmark(req.user.username, req.params.id)
-    .then((bookmark) => res.json(bookmark))
-    .catch((err) => res.status(500).send(err));
-});
-
-router.post('/tags', stormpath.loginRequired, (req, res, next) => {
-  // console.log(req.body);
-  if (!req.body.id) res.status(500).json({ error: 'missing markup id' });
-
-  Bookmark.findById(req.body.id, (err, bm) => {
-    if (err) next(err);
-
-    const bookmark = bm;
-    const tags = req.body.tags.split(',').map(str => str.trim().toLowerCase());
-    if (Array.isArray(tags)) {
-      bookmark.tags = tags;
-      bookmark.save();
-      res.json(bookmark);
+router.post('/apiKeys', stormpath.loginRequired, (req, res) => {
+  req.user.createApiKey((err, apiKey) => {
+    if (err) {
+      res.status(400).end('Oops!  There was an error: ' + err.userMessage);
+    } else {
+      res.json(apiKey);
     }
   });
 });
 
+router.get('/bookmarks', stormpath.loginRequired, bookmarkRoutesHandlers.getBookmarks);
+router.post('/bookmark', stormpath.loginRequired, bookmarkRoutesHandlers.addBookmark);
+router.delete('/bookmark/:id', stormpath.loginRequired, bookmarkRoutesHandlers.deleteBookmark);
+router.post('/bookmark/:id/tags', stormpath.loginRequired, bookmarkRoutesHandlers.addTags);
 
 module.exports = router;

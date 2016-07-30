@@ -12,6 +12,7 @@ const csrf = require('csurf');
 mongoose.connect(process.env.MONGODB_URI + '/boomstack');
 
 const routes = require('./routes/index.route');
+const apiRoutes = require('./routes/api.route');
 
 const app = express();
 
@@ -27,8 +28,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(stormpath.init(app, { website: true }));
+
+// mounting api routes before csrf tokens routes
+app.use('/api', apiRoutes);
+
+// CSRF tokens to secure every other routes
 app.use(csrf({ cookie: true }));
 
+// main routes
 app.use('/', routes);
 
 // catch 404 and forward to error handler

@@ -69,6 +69,28 @@ const bookmarkController = {
       });
     });
   },
+
+  addTags(username, bookmarkId, tagsString) {
+    return new Promise((resolve, reject) => {
+      if (!bookmarkId) return reject('missing markup id');
+      if (!tagsString) return reject('no tags to add');
+
+      Bookmark.findById(bookmarkId, (err, bm) => {
+        if (err) return reject(err);
+
+        const bookmark = bm;
+        const tags = tagsString.split(',').map(str => str.trim().toLowerCase());
+        if (Array.isArray(tags)) {
+          bookmark.tags = tags;
+          bookmark.save();
+          return resolve(bookmark);
+        }
+        return null;
+      });
+      return null;
+    });
+  },
+
 };
 
 module.exports = bookmarkController;
