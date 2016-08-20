@@ -38,6 +38,7 @@ router.get('/', stormpath.getUser, (req, res, next) => {
     });
 });
 
+/* Dashboard */
 router.get('/hello', stormpath.loginRequired, (req, res) => {
   res.render('hello', {
     csrfToken: req.csrfToken(),
@@ -45,6 +46,7 @@ router.get('/hello', stormpath.loginRequired, (req, res) => {
   });
 });
 
+/* display API key (chrome extension)*/
 router.post('/apiKeys', stormpath.loginRequired, (req, res) => {
   req.user.createApiKey((err, apiKey) => {
     if (err) {
@@ -55,6 +57,7 @@ router.post('/apiKeys', stormpath.loginRequired, (req, res) => {
   });
 });
 
+/* AJAX Routes*/
 router.get('/bookmarks', stormpath.loginRequired, bookmarkRoutesHandlers.getBookmarks);
 router.post('/bookmark', stormpath.loginRequired, bookmarkRoutesHandlers.addBookmark);
 router.delete('/bookmark/:id', stormpath.loginRequired, bookmarkRoutesHandlers.deleteBookmark);

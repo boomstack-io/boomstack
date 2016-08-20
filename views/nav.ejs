@@ -47,6 +47,9 @@
                             <ul class="dropdown-menu" role="menu">
                                 <li><form class="form-logout" action="/logout" method="post"></form>
                                   <a href="#" onclick="$('.form-logout').submit();"><i class="fa fa-btn fa-sign-out"></i>Logout</a></li>
+                                <li><form class="form-api-key" action="/apiKeys" method="post">
+                                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                </form><a href="#" onclick="$('.form-api-key').submit();">API</a></li>
                             </ul>
                         </li>
                     <% } %>
