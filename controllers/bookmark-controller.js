@@ -37,20 +37,30 @@ const bookmarkController = {
     return new Promise((resolve, reject) => {
       if (!username) return reject('user not loggged id');
       if (!url.match(/^https?/)) return reject('incorrect url format');
-      getPageTitle(url)
-        .catch(() => '')
-        .then((title) => {
-          const bookmark = new Bookmark({
-            user: username,
-            title,
-            url,
-          });
-          // res.json(title);
-          bookmark.save((err, bm) => {
-            if (err) return reject(err);
-            return resolve(bm);
-          });
-        });
+      Bookmark.findOne({
+        user: username,
+        url,
+      }).exec((err, existingBookmark) => {// eslint-disable-line
+        // console.log(existingBookmark);
+        if (err) return reject(err);
+        else if (existingBookmark === null) {
+          getPageTitle(url)
+            .catch(() => '')
+            .then((title) => {
+              const bookmark = new Bookmark({
+                user: username,
+                title,
+                url,
+              });
+              // res.json(title);
+              bookmark.save((error, bm) => {
+                if (error) return reject(error);
+                return resolve(bm);
+              });
+            });
+        } else return reject('This page is already bookmarked');
+        return null;
+      });
       return null;
     });
   },
