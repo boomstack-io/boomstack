@@ -52,7 +52,7 @@ router.post('/apiKeys', stormpath.loginRequired, (req, res) => {
     if (err) {
       res.status(400).end('Oops!  There was an error: ' + err.userMessage);
     } else {
-      res.json(apiKey);
+      res.send('API Key: ' + apiKey.id + ':' + apiKey.secret);
     }
   });
 });
