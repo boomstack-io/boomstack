@@ -30,7 +30,7 @@ const MarkupList = React.createClass({
       );
     });
     return (
-      <ul className="list-group markups">{markupNodes}</ul>
+      <div className="markups">{markupNodes}</div>
     );
   },
 });

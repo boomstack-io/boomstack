@@ -232,7 +232,7 @@ const StackStuff = React.createClass({
 
     return (
       <div>
-        <ul className="list-group">
+        <ul className="list-group controller">
           <li className="list-group-item">
             <ReactCSSTransitionGroup
               transitionName="mainForms"
