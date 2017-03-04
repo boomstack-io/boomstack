@@ -1,12 +1,13 @@
-const Bookmark = require('../models/bookmark.model');
-const getPageTitle = require('../tools/get-page-title.js');
+const Bookmark = require(`../models/bookmark.model`);
+const getPageTitle = require(`../tools/get-page-title`);
+const getSuggestedTags = require(`../tools/get-suggested-tags`);
 
 const bookmarkController = {
   getBookmarks: (username = null, search = null, offset = 0, limit = 10) => {// eslint-disable-line
     return new Promise((resolve, reject) => {
-      if (!username) return reject('user not loggged id');
+      if (!username) { return reject(`user not loggged id`); }
       let q = Bookmark.find({ user: username });
-      console.log('finding...');
+      console.log(`finding...`);
       if (search) {
         console.log(`Searching for ${search}`);
         const reg = new RegExp(`.*${search}.*`);
@@ -21,12 +22,14 @@ const bookmarkController = {
           }
         );
       }
-      if (offset) q.skip(parseInt(offset, 10));
-      if (limit) q.limit(parseInt(limit, 10));
+      if (offset) { q.skip(parseInt(offset, 10)); }
+      if (limit) { q.limit(parseInt(limit, 10)); }
       q
-        .sort('-created')
+        .sort(`-created`)
         .exec((err, bookmarks) => {
-          if (err) return reject(err);
+          if (err) { return reject(err); }
+          bookmarks = bookmarks.map(b => b.toObject());
+          bookmarks.forEach(b => b.suggestedTags = getSuggestedTags(b.url, b.title));
           return resolve(bookmarks);
         });
       return null;
@@ -35,18 +38,18 @@ const bookmarkController = {
 
   addBookmark: (username, url) => {// eslint-disable-line
     return new Promise((resolve, reject) => {
-      if (!username) return reject('user not loggged id');
-      if (!url.match(/^https?/)) return reject('incorrect url format');
+      if (!username) { return reject(`user not loggged id`); }
+      if (!url.match(/^https?/)) { return reject(`incorrect url format`); }
       Bookmark.findOne({
         user: username,
         url,
       }).exec((err, existingBookmark) => {// eslint-disable-line
         // console.log(existingBookmark);
-        if (err) return reject(err);
+        if (err) { return reject(err); }
         else if (existingBookmark === null) {
           getPageTitle(url)
-            .catch(() => '')
-            .then((title) => {
+            .catch(() => ``)
+            .then(title => {
               const bookmark = new Bookmark({
                 user: username,
                 title,
@@ -54,11 +57,14 @@ const bookmarkController = {
               });
               // res.json(title);
               bookmark.save((error, bm) => {
-                if (error) return reject(error);
-                return resolve(bm);
+                if (error) { return reject(error); }
+                const suggestedTags = getSuggestedTags(url, title);
+                console.log(`Suggested tags : ${suggestedTags}`);
+                bm.suggestedTags = suggestedTags;
+                return resolve(Object.assign({}, bm.toObject(), { suggestedTags }));
               });
             });
-        } else return reject('This page is already bookmarked');
+        } else { return reject(`This page is already bookmarked`); }
         return null;
       });
       return null;
@@ -69,27 +75,26 @@ const bookmarkController = {
     return new Promise((resolve, reject) => {
       console.log(`Deleting markup n°${id}`);
       Bookmark.findOne({ _id: id, user: username }, (err, bm) => {
-        if (err) return reject(err);
-        if (bm == null) return reject('bookmark does not exists');
+        if (err) { return reject(err); }
+        if (bm == null) { return reject(`bookmark does not exists`); }
         bm.remove((error, bookmark) => {
-          if (error) reject(err);
-          else resolve(bookmark);
+          if (error) { reject(err); }          else { resolve(bookmark); }
         });
         return null;
       });
     });
   },
 
-  addTags(username, bookmarkId, tagsString) {
+  addTags (username, bookmarkId, tagsString) {
     return new Promise((resolve, reject) => {
-      if (!bookmarkId) return reject('missing markup id');
-      if (!tagsString) return reject('no tags to add');
+      if (!bookmarkId) { return reject(`missing markup id`); }
+      if (!tagsString) { return reject(`no tags to add`); }
 
       Bookmark.findById(bookmarkId, (err, bm) => {
-        if (err) return reject(err);
+        if (err) { return reject(err); }
 
         const bookmark = bm;
-        const tags = tagsString.split(',').map(str => str.trim().toLowerCase());
+        const tags = tagsString.split(`,`).map(str => str.trim().toLowerCase());
         if (Array.isArray(tags)) {
           bookmark.tags = tags;
           bookmark.save();

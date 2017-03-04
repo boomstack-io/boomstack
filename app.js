@@ -25,7 +25,7 @@ app.set('view engine', 'ejs');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser('xzeoimnc'));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(stormpath.init(app, { website: true }));
 
@@ -33,7 +33,7 @@ app.use(stormpath.init(app, { website: true }));
 app.use('/api', apiRoutes);
 
 // CSRF tokens to secure every other routes
-app.use(csrf({ cookie: true }));
+app.use(csrf({ cookie: { key: 'xxsrf' } }));
 
 // main routes
 app.use('/', routes);

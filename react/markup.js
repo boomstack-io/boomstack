@@ -8,8 +8,11 @@ const Markup = React.createClass({
   propTypes: {
 
     url: React.PropTypes.string.isRequired,
-    tags: React.PropTypes.array,
+    tags: React.PropTypes.arrayOf(React.PropTypes.string),
     children: React.PropTypes.string.isRequired,
+    onUpdateTags: React.PropTypes.func,
+    onDelete: React.PropTypes.func,
+    id_markup: React.PropTypes.oneOfType([React.PropTypes.string, React.PropTypes.number]),
   },
 
   getInitialState() {
@@ -36,19 +39,32 @@ const Markup = React.createClass({
     return this.props.url;
   },
 
-  openEditToolbar() {
+  toogleEditToolbar() {
     this.setState({ showToolbar: !this.state.showToolbar });
   },
 
   closeEditToolbar() {
-    this.setState({ showToolbar: !this.state.showToolbar });
+    this.setState({ showToolbar: false });
+  },
+
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      editTags: nextProps.tags,
+    });
   },
 
   editTags() {
     this.setState({
       edit: !this.state.edit,
-      editedTags: this.props.tags
+      editedTags: this.props.tags,
     });
+  },
+
+  saveNewTags() {
+    if (this.props.onUpdateTags) this.props.onUpdateTags(this.state.editedTags);
+    this.setState({
+      edit: false,
+    })
   },
 
   renderTags() {
@@ -71,13 +87,13 @@ const Markup = React.createClass({
           <a target="_blank" rel="nofollow noopener noreferrer" href={this.renderUrl()}>{host}</a>
         </div>
         <div className={`edit-toolbar ${this.state.showToolbar ? 'opened' : ''}`} onMouseLeave={this.closeEditToolbar}>
-          <a className="handle" onClick={this.openEditToolbar}></a>
+          <a className="handle" onClick={this.toogleEditToolbar}></a>
           <a className="delete" onClick={this.handleDelete}><span className="glyphicon glyphicon-trash" /></a>
           <a className="edit-tag" onClick={this.editTags}><span className="glyphicon glyphicon-pencil" /></a>
         </div>
         <div className={`tag-edit ${this.state.edit ? 'opened' : ''}`}>
           <TagsInput value={this.state.editedTags} onChange={this.handleTagsChange} />
-          <button className="">Save</button>
+          <button onClick={this.saveNewTags} className="">Save</button>
         </div>
       </div>
     );

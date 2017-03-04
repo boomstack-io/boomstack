@@ -2,6 +2,7 @@ const React = require('react');
 const ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 const $ = require('jquery');
 const stopWords = require('stopwords-json');
+const boomstack = require('./boomstack-service');
 
 const MarkupList = require('./markup-list.js');
 const AddMarkupForm = require('./addmarkup-form.js');
@@ -29,74 +30,47 @@ const StackStuff = React.createClass({
   },
 
   handleAddMarkup(data) {
-    $.ajax(`${baseUrl}bookmark`, {
-      method: 'post',
-      data: {
-        url: data.url,
-        _csrf: csrfToken,
-      },
-      dataType: 'json',
-      success: (res) => {
-        const markups = this.state.markups;
-        markups.unshift(res);
+    boomstack.addBookmark(data.url)
+    .then((res) => {
+      const markups = this.state.markups;
+      markups.unshift(res);
 
-        this.setState({
-          markups,
-          loading: false,
-          offset: this.state.offset + 1,
-          showAddTagsForm: true,
-        });
-      },
-
-      error(xhr, status, error) {
-        console.log(error);
-      },
+      this.setState({
+        markups,
+        loading: false,
+        offset: this.state.offset + 1,
+        showAddTagsForm: true,
+      });
     });
   },
 
   handleLoadMore() {
-    if (!this.state.loading
-      && (this.state.markups.length >= this.state.offset + this.state.limit)) {
+    if (!this.state.loading && (this.state.markups.length >= this.state.offset + this.state.limit)) {
       this.setState({
         loading: true,
         offset: this.state.offset + this.state.limit,
       });
 
-      $.ajax(baseUrl + 'bookmarks', {
-        method: 'get',
-        data: {
-          offset: this.state.offset,
-          limit: this.state.limit,
-          search: this.state.search,
-        },
-        success: (res) => {
-          const markups = this.state.markups.concat(res);
-          this.setState({
-            markups,
-            loading: false,
-          });
-        },
+      boomstack.getBookmarks(this.state.search, this.state.limit, this.state.offset)
+      .then((res) => {
+        const markups = this.state.markups.concat(res);
+        this.setState({
+          markups,
+          loading: false,
+        });
       });
     }
   },
 
   handleAddTagToLastMarkup(tags) {
-    console.log('Adding tags : ' + tags);
     if (tags && tags.length > 0) {
       const tagsString = tags.join(',');
       const id = this.state.markups[0]._id;
 
-      $.ajax(baseUrl + 'bookmark/' + id + '/tags', {
-        method: 'post',
-        data: {
-          tags: tagsString,
-          _csrf: csrfToken,
-          dataType: 'json',
-        },
-        success: (res) => {
-          this.replaceMarkup(res);
-          this.setState({ showAddTagsForm: false });
-        },
+      boomstack.addTags(id,tagsString)
+      .then((res) => {
+        this.replaceMarkup(res);
+        this.setState({ showAddTagsForm: false });
       });
     }
   },
@@ -106,7 +80,7 @@ const StackStuff = React.createClass({
   },
 
   handleSearch(searchString) {
-    console.log('searching ' + searchString);
+    // console.log('searching ' + searchString);
     this.setState({
       search: searchString,
       offset: 0,
@@ -119,20 +93,12 @@ const StackStuff = React.createClass({
   reloadMarkups() {
     this.setState({ loading: true });
 
-    $.ajax(baseUrl + 'bookmarks', {
-      method: 'get',
-      dataType: 'json',
-      data: {
-        search: this.state.search,
-        offset: this.state.offset,
-        limit: this.state.limit,
-      },
-      success: (data) => {
-        this.setState({
-          markups: data,
-          loading: false,
-        });
-      },
+    boomstack.getBookmarks(this.state.search, this.state.limit, this.state.offset)
+    .then((data) => {
+      this.setState({
+        markups: data,
+        loading: false,
+      });
     });
   },
 
@@ -164,23 +130,16 @@ const StackStuff = React.createClass({
     }
 
     // console.log('Deleting markup ' + markupId + ' (index: ' + index + ')');
+    boomstack.deleteBookmark(markupId)
+    .then(() => {
+      // console.log('Successfuly deleted: ' + data);
+      const markups = this.state.markups;
+      markups.splice(index, 1);
 
-    $.ajax(baseUrl + 'bookmark/' + markupId, {
-      type: 'DELETE',
-      data: { _csrf: csrfToken },
-      success: () => {
-        // console.log('Successfuly deleted: ' + data);
-        const markups = this.state.markups;
-        markups.splice(index, 1);
-
-        this.setState({
-          markups,
-          offset: this.state.offset - 1,
-        });
-      },
-      error(xhr, status, error) {
-        console.log(error);
-      },
+      this.setState({
+        markups,
+        offset: this.state.offset - 1,
+      });
     });
   },
 
@@ -218,17 +177,6 @@ const StackStuff = React.createClass({
   },
 
   render() {
-    // Display the form to add a markup,*or* the form to add a tag if we just added a markup
-    let addTagForm = null;
-    let addMarkupForm = null;
-    if (this.state.showAddTagsForm) addTagForm = this.renderAddTagForm();
-    else {
-      addMarkupForm = (
-        <AddMarkupForm
-          onAddMarkup={this.handleAddMarkup}
-          onSearch={this.handleSearch}
-        />);
-    }
 
     return (
       <div>
@@ -239,8 +187,7 @@ const StackStuff = React.createClass({
               transitionEnterTimeout={1000}
               transitionLeaveTimeout={1000}
             >
-              {addMarkupForm}
-              {addTagForm}
+              { this.state.showAddTagsForm ? this.renderAddTagForm() : <AddMarkupForm onAddMarkup={this.handleAddMarkup} onSearch={this.handleSearch} /> }
             </ReactCSSTransitionGroup>
           </li>
         </ul>
