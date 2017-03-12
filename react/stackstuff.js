@@ -143,34 +143,28 @@ const StackStuff = React.createClass({
     });
   },
 
-  eliminateStopWordsInTagsArray(tags) {
-    const cleanTags = [];
-    tags.forEach((tag) => {
-      if (tag === '') return;
-      const sw = stopWords;
-      const t = tag.toLowerCase();
-      // searching for the tag in stopwords list... (for every languages)
-      const r = Object.keys(sw).find((l) => sw[l].find((s) => s === t) !== undefined);
-      if (r === undefined) cleanTags.push(tag);
-      // else console.log(`Eliminated stop word: ${tag}`);
-    });
-    return cleanTags;
+  handleUpdateMarkupTags(markupId, newTags) {
+    if (newTags && newTags.length > 0) {
+      const tagsString = newTags.join(',');
+
+      boomstack.addTags(markupId,tagsString)
+      .then((res) => {
+        this.replaceMarkup(res);
+        this.setState({ showAddTagsForm: false });
+      });
+    }
   },
 
   renderAddTagForm() {
     if (!this.state.markups || this.state.markups.length === 0) return null;
     const lastMarkup = this.state.markups[0];
-    const tags = lastMarkup.tags || [];
-    const rawTags = tags.map((tag) => tag.name);
-
-    let suggestedTags = [];
-    if (lastMarkup.title) suggestedTags = lastMarkup.title.split(/[ ,.;:|]/);
-    suggestedTags = this.eliminateStopWordsInTagsArray(suggestedTags);
+    // const tags = lastMarkup.tags || [];
+    // const suggestedTags = lastMarkup.suggestedTags || [];
 
     return (
       <AddTagForm
-        tags={tags}
-        suggestedTags={suggestedTags}
+        tags={lastMarkup.tags || []}
+        suggestedTags={lastMarkup.suggestedTags || []}
         onAddTag={this.handleAddTagToLastMarkup}
         onCancel={this.handleCancelAddTag}
       />);
@@ -191,7 +185,10 @@ const StackStuff = React.createClass({
             </ReactCSSTransitionGroup>
           </li>
         </ul>
-        <MarkupList markups={this.state.markups} onMarkupDelete={this.handleMarkupDelete} />
+        <MarkupList
+          markups={this.state.markups}
+          onUpdateMarkupTags={this.handleUpdateMarkupTags}
+          onMarkupDelete={this.handleMarkupDelete} />
         <PostLoader onLoadMore={this.handleLoadMore} active={!this.state.loading} />
       </div>
     );

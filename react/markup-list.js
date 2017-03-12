@@ -9,6 +9,10 @@ const MarkupList = React.createClass({
     }
   },
 
+  handleUpdateMarkupTags(markupId, newTags) {
+    if (this.props.onUpdateMarkupTags) this.props.onUpdateMarkupTags(markupId, newTags);
+  },
+
   render() {
     if (this.props.markups.length == 0) return (<div></div>);
 
@@ -24,6 +28,7 @@ const MarkupList = React.createClass({
           id_markup={markup._id}
           tags={markup.tags}
           onDelete={this.handleMarkupDelete}
+          onUpdateTags={this.handleUpdateMarkupTags}
         >
           {title}
         </Markup>

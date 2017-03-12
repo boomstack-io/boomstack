@@ -1,7 +1,7 @@
 const React     = require('react');
 const parseUri  = require('./parseuri.js');
 const he        = require('he');
-const TagsInput = require('react-tagsinput');
+const AdvancedTagsInput = require('./advanced-tags-input');
 
 const Markup = React.createClass({
 
@@ -61,7 +61,7 @@ const Markup = React.createClass({
   },
 
   saveNewTags() {
-    if (this.props.onUpdateTags) this.props.onUpdateTags(this.state.editedTags);
+    if (this.props.onUpdateTags) this.props.onUpdateTags(this.props.id_markup, this.state.editedTags);
     this.setState({
       edit: false,
     })
@@ -92,7 +92,7 @@ const Markup = React.createClass({
           <a className="edit-tag" onClick={this.editTags}><span className="glyphicon glyphicon-pencil" /></a>
         </div>
         <div className={`tag-edit ${this.state.edit ? 'opened' : ''}`}>
-          <TagsInput value={this.state.editedTags} onChange={this.handleTagsChange} />
+          <AdvancedTagsInput value={this.state.editedTags} onChange={this.handleTagsChange} />
           <button onClick={this.saveNewTags} className="">Save</button>
         </div>
       </div>

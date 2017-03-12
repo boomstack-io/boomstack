@@ -4,7 +4,7 @@ const he        = require(`he`);
 const filterTags = function filterTags (tags) {
   const garbageTags = {};
 
-  // finding stopWords : 
+  // finding stopWords :
   Object.keys(stopWords).forEach(language => {
     const words = stopWords[language];
     tags.forEach(tag => {
@@ -14,7 +14,7 @@ const filterTags = function filterTags (tags) {
 
   return tags.filter(tag => {
     const isGarbage = typeof Object.keys(garbageTags).find(t => t === tag.toLowerCase()) !== `undefined`;
-    const isUselessChar = typeof [`-`, `|`, `&`].find(c => c === tag) !== `undefined`;
+    const isUselessChar = typeof [`-`, `–`, `|`, `&`].find(c => c === tag) !== `undefined`;
     return tag && !isGarbage && !isUselessChar;
   });
 }
